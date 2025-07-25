@@ -1,0 +1,39 @@
+Chapter 13: Bayesian Model Averaging
+
+Instead of picking one "best" model, Bayesian Model Averaging (BMA) accounts for model uncertainty by averaging predictions across multiple plausible models, weighted by their posterior probability.
+
+13.1 Model Comparison with WAIC and LOO
+
+Calculating the true model evidence for Bayes factors is often hard. Instead, we can use information criteria like WAIC (Watanabe-Akaike Information Criterion) or LOO (Leave-One-Out Cross-Validation) to compare models. These metrics estimate a model's out-of-sample predictive accuracy. The model with the lower WAIC/LOO score is generally preferred.
+
+13.2 Code Example: Comparing Two Models
+
+Let's compare our linear model to a simpler, intercept-only model.
+Python
+
+# The original linear model is already defined and fitted
+
+# Define an intercept-only model
+with pm.Model() as intercept_only_model:
+    intercept = pm.Normal('intercept', mu=np.mean(y), sigma=5)
+    sigma = pm.HalfNormal('sigma', sigma=5)
+    y_obs = pm.Normal('y_obs', mu=intercept, sigma=sigma, observed=y)
+    trace_intercept_only = pm.sample(1000, tune=1000)
+    # Calculate LOO
+    loo_intercept_only = az.loo(trace_intercept_only)
+
+# Calculate LOO for the original linear model
+with linear_model:
+    loo_linear = az.loo(trace_linear)
+
+# Compare the two models
+comparison_df = az.compare({'linear': trace_linear, 'intercept_only': trace_intercept_only})
+print(comparison_df)
+
+az.plot_compare(comparison_df)
+plt.show()
+The az.compare function will rank the models by their LOO score, clearly showing that the linear model has far better predictive accuracy.
+
+
+
+
