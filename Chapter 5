@@ -1,0 +1,51 @@
+Chapter 5: Loss Functions and Decision Theory
+
+Bayesian inference is a complete framework for rational decision-making under uncertainty. This is formalized through Bayesian decision theory.
+
+5.1 The Principle of Minimizing Posterior Expected Loss
+
+The core idea is to:
+Define a loss function L(θ, a) that quantifies the cost of taking action a when the true parameter value is θ.
+Choose the action a that has the minimum expected loss, where the expectation is taken over the posterior distribution of θ.
+Different loss functions lead to different optimal estimators:
+Squared Error Loss: (θ - a)². The optimal action is the posterior mean.
+Absolute Error Loss: |θ - a|. The optimal action is the posterior median.
+0-1 Loss: 0 if correct, 1 if incorrect. The optimal action is the posterior mode (MAP).
+
+5.2 Code Example: A Simple Decision Problem
+
+Imagine we're the coin manufacturer. If the coin's bias p is greater than 0.6, we must recall the batch, which costs $1000. If p is less than or equal to 0.6 but we recall it anyway, it costs us $200 (a wasted recall). If p is greater than 0.6 and we don't recall it, it costs us $5000 (reputation damage).
+Python
+
+# Continuing from the coin flip MCMC trace...
+
+# Get the posterior samples for 'p'
+p_samples = trace.posterior['p'].values.flatten()
+
+# Define loss for the action "Recall"
+def loss_recall(p):
+    if p > 0.6:
+        return 0  # Correct decision
+    else:
+        return 200 # Wasted recall
+
+# Define loss for the action "Do Not Recall"
+def loss_no_recall(p):
+    if p > 0.6:
+        return 5000 # Big mistake
+    else:
+        return 0 # Correct decision
+
+# Calculate expected loss for each action by averaging over posterior samples
+expected_loss_recall = np.mean([loss_recall(p) for p in p_samples])
+expected_loss_no_recall = np.mean([loss_no_recall(p) for p in p_samples])
+
+print(f"Expected Loss if we RECALL: ${expected_loss_recall:.2f}")
+print(f"Expected Loss if we DO NOT RECALL: ${expected_loss_no_recall:.2f}")
+
+if expected_loss_recall < expected_loss_no_recall:
+    print("\nOptimal decision: RECALL the batch.")
+else:
+    print("\nOptimal decision: DO NOT RECALL the batch.")
+
+
