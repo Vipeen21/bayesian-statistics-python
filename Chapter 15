@@ -1,0 +1,440 @@
+Chapter 15: Applications – Econometrics, Finance, and Machine Learning
+
+In this final chapter, we see how the Bayesian methods we've learned are applied to solve complex, real-world problems. Each section provides a concrete, runnable code example for the specific techniques used in each field.
+
+15.1 Econometrics
+
+Econometrics heavily relies on time-series and panel data, where Bayesian methods offer principled ways to handle complexity, prevent overfitting, and model latent structures.
+
+
+Bayesian Vector Autoregression (BVAR)
+
+Vector Autoregressions (VARs) model the dynamics of multiple time series jointly. However, they have many parameters, leading to overfitting. A BVAR uses priors to "shrink" the coefficients towards simpler, more plausible values (e.g., a random walk), improving forecast performance.
+Python
+
+import pymc as pm
+import numpy as np
+import arviz as az
+import matplotlib.pyplot as plt
+
+# 1. Simulate a 2-dimensional VAR(1) process
+np.random.seed(42)
+T = 100
+# True coefficient matrix A1
+A1_true = np.array([[0.7, 0.2],
+                    [-0.1, 0.9]])
+# True covariance of errors
+cov_true = np.array([[1.0, 0.3],
+                     [0.3, 1.5]])
+# Generate data
+Y = np.zeros((T, 2))
+for t in range(1, T):
+    Y[t, :] = A1_true @ Y[t-1, :] + np.random.multivariate_normal([0,0], cov_true)
+
+# 2. Define the BVAR model in PyMC
+with pm.Model() as bvar_model:
+    # Priors on the coefficient matrix (like a simplified Minnesota prior)
+    # Shrinking coefficients towards zero
+    A1 = pm.Normal("A1", mu=0, sigma=0.5, shape=(2, 2))
+
+    # Prior on the error covariance matrix using LKJ Cholesky decomposition
+    chol, _, _ = pm.LKJCholeskyCov(
+        "chol", n=2, eta=2.0, sd_dist=pm.Exponential.dist(1.0, shape=2), compute_corr=True
+    )
+    cov = pm.Deterministic("cov", chol @ chol.T)
+
+    # Likelihood
+    # The mean for Y[t] is A1 * Y[t-1]
+    mu = pm.math.dot(A1, Y[:-1, :].T).T
+    likelihood = pm.MvNormal("likelihood", mu=mu, chol=chol, observed=Y[1:, :])
+
+    trace_bvar = pm.sample(1000, tune=1500)
+
+# 3. Analyze the results
+az.plot_posterior(trace_bvar, var_names=["A1", "cov"], grid=(3,2), figsize=(10,8))
+plt.show()
+
+# Compare true vs. posterior mean of A1
+print("True A1 matrix:\n", A1_true)
+print("\nPosterior mean of A1 matrix:\n", trace_bvar.posterior['A1'].mean(axis=(0,1)))
+The posterior distributions for the A1 matrix elements will be centered near their true values. The priors prevent the estimates from overfitting to the noise in the 100 data points.
+
+
+Hierarchical Model for Panel Data
+
+Panel data follows multiple units (e.g., firms, countries) over time. A hierarchical (or multilevel) model is perfect for this, allowing us to estimate both population-level effects and unit-specific deviations by "partially pooling" information.
+Python
+
+import pandas as pd
+
+# 1. Simulate panel data (e.g., sales for 5 stores over 20 years)
+np.random.seed(123)
+n_stores = 5
+n_years = 20
+store_idx = np.repeat(np.arange(n_stores), n_years)
+# Create different intercepts for each store
+store_intercepts_true = np.random.normal(50, 10, n_stores)
+# Assume a common trend (slope)
+slope_true = 2.5
+X = np.tile(np.arange(n_years), n_stores)
+y = store_intercepts_true[store_idx] + slope_true * X + np.random.normal(0, 5, size=n_stores*n_years)
+
+# 2. Define the hierarchical model
+with pm.Model() as panel_model:
+    # Hyperpriors for the group-level (store) intercepts
+    mu_a = pm.Normal('mu_a', mu=50, sigma=10)
+    sigma_a = pm.HalfNormal('sigma_a', sigma=10)
+
+    # Common slope for all stores (fixed effect)
+    b = pm.Normal('b', mu=0, sigma=5)
+    
+    # Store-specific intercepts (random effects)
+    a = pm.Normal('a', mu=mu_a, sigma=sigma_a, shape=n_stores)
+    
+    # Model error
+    sigma_y = pm.HalfNormal('sigma_y', sigma=10)
+    
+    # Expected value
+    mu = a[store_idx] + b * X
+    
+    # Likelihood
+    likelihood = pm.Normal('likelihood', mu=mu, sigma=sigma_y, observed=y)
+    
+    trace_panel = pm.sample(1000, tune=1000)
+
+# 3. Plot the random intercepts
+az.plot_forest(trace_panel, var_names=['a'], combined=True)
+plt.axvline(x=store_intercepts_true.mean(), color='red', linestyle='--', label='True Mean Intercept')
+plt.title("Posterior for Store-Specific Intercepts (Random Effects)")
+plt.legend()
+plt.show()
+The forest plot shows the posterior for each store's intercept. These estimates "borrow strength" from each other, resulting in more stable and realistic values than if we had analyzed each store completely separately.
+
+
+State-Space Models (Dynamic Linear Models)
+
+State-space models are used to infer latent (unobserved) states that evolve over time. The Bayesian framework is a natural fit for estimating both the latent state and the model's parameters simultaneously. The Nile river flow example is a classic application.
+Python
+
+# 1. Load Nile river flow data
+nile_data = pd.read_csv(pm.get_data("nile.csv"))
+nile_years = nile_data["year"].values
+nile_flow = nile_data["volume"].values
+
+# 2. Define the state-space model (DLM)
+with pm.Model() as nile_dlm:
+    # Prior on the initial state (unobserved river level)
+    level_init = pm.Normal("level_init", mu=np.mean(nile_flow), sigma=200)
+
+    # Priors for process and observation variances
+    sigma_level = pm.HalfNormal("sigma_level", sigma=50) # How much the true level can change (process error)
+    sigma_obs = pm.HalfNormal("sigma_obs", sigma=100) # How noisy our measurements are (observation error)
+
+    # The latent random walk for the river level
+    level = pm.GaussianRandomWalk("level", mu=0, sigma=sigma_level, init_dist=pm.Normal.dist(mu=level_init, sigma=200), shape=len(nile_flow))
+
+    # Likelihood: Observations are noisy measurements of the true level
+    likelihood = pm.Normal("likelihood", mu=level, sigma=sigma_obs, observed=nile_flow)
+
+    trace_nile = pm.sample(2000, tune=2000)
+
+# 3. Plot the inferred latent state
+plt.figure(figsize=(12, 5))
+plt.plot(nile_years, nile_flow, 'o', color='gray', alpha=0.7, label="Observed Flow")
+plt.plot(nile_years, trace_nile.posterior['level'].mean(axis=(0,1)), 'C0', lw=2, label="Inferred Underlying Level")
+az.plot_hdi(nile_years, trace_nile.posterior['level'], color='C0', fill_kwargs={'alpha': 0.2})
+plt.title("Bayesian State-Space Model of Nile River Flow")
+plt.xlabel("Year")
+plt.ylabel("Volume")
+plt.legend()
+plt.show()
+The model correctly infers the famous structural break in the Nile's flow around 1898, demonstrating its ability to track a changing, unobserved process over time.
+
+15.2 Finance
+
+In finance, uncertainty is paramount. Bayesian methods provide a superior framework for handling parameter uncertainty in asset pricing, portfolio construction, and risk management.
+
+
+Bayesian Model Averaging for Asset Pricing
+
+Which factors (market, size, value, momentum, etc.) truly explain stock returns? Instead of picking one model, Bayesian Model Averaging (BMA) combines predictions from multiple models, weighted by the evidence for each model. We can use LOO/WAIC as a practical proxy for model evidence.
+Python
+
+# 1. Simulate data from a 3-factor model where one factor is irrelevant
+np.random.seed(42)
+N = 100
+# Three potential factors (uncorrelated for simplicity)
+F1 = np.random.randn(N)
+F2 = np.random.randn(N)
+F3 = np.random.randn(N) # Irrelevant factor
+# Asset excess returns
+R = 0.02 + 1.2 * F1 + 0.5 * F2 + 0.0 * F3 + np.random.normal(0, 0.5, N)
+
+# 2. Define and fit multiple regression models
+models = {}
+traces = {}
+# Model 1: Factor 1 only
+with pm.Model() as models['F1']:
+    pm.LinearRegression('R', F1, R)
+    traces['F1'] = pm.sample(500, tune=500, progressbar=False)
+# Model 2: Factors 1 and 2
+with pm.Model() as models['F1_F2']:
+    pm.LinearRegression('R', np.vstack([F1, F2]).T, R)
+    traces['F1_F2'] = pm.sample(500, tune=500, progressbar=False)
+# Model 3: All three factors
+with pm.Model() as models['F1_F2_F3']:
+    pm.LinearRegression('R', np.vstack([F1, F2, F3]).T, R)
+    traces['F1_F2_F3'] = pm.sample(500, tune=500, progressbar=False)
+
+# 3. Compare models using ArviZ's compare function (which also computes BMA weights)
+comparison_df = az.compare(traces)
+print(comparison_df)
+az.plot_compare(comparison_df)
+plt.show()
+The comparison table will rank the F1_F2 model as the best (lowest LOO score). It also provides a weight column, which represents the BMA weight for each model based on its predictive performance. This tells us how much we should trust each model when making predictions.
+
+
+Bayesian Portfolio Optimization
+
+Classic portfolio optimization uses single point estimates of expected returns and covariances, ignoring the massive uncertainty around them. A Bayesian approach yields a full posterior distribution for the optimal asset weights, giving a more realistic view.
+Python
+
+# 1. Simulate some stock returns
+np.random.seed(42)
+true_means = np.array([0.05, 0.08]) # Annual returns for two assets
+true_cov = np.array([[0.1**2, 0.5*0.1*0.15], [0.5*0.1*0.15, 0.15**2]])
+returns = np.random.multivariate_normal(true_means, true_cov, size=20)
+
+# 2. Fit a Bayesian model to get posteriors for means and covariance
+with pm.Model() as portfolio_model:
+    packed_chol = pm.LKJCholeskyCov("packed_chol", n=2, eta=2.0, sd_dist=pm.Exponential.dist(1.0))
+    chol = pm.expand_packed_triangular(2, packed_chol)
+    cov = pm.Deterministic("cov", chol @ chol.T)
+    mu = pm.Normal("mu", mu=0, sigma=0.2, shape=2)
+    obs = pm.MvNormal("obs", mu=mu, chol=chol, observed=returns)
+    trace_portfolio = pm.sample(1000, tune=1000)
+
+# 3. For each posterior sample, calculate the optimal max-Sharpe weights
+posterior_samples = az.extract(trace_portfolio)
+optimal_weights = []
+for mu_s, cov_s in zip(posterior_samples['mu'], posterior_samples['cov']):
+    inv_cov = np.linalg.inv(cov_s.values)
+    w = inv_cov @ mu_s.values
+    optimal_weights.append(w / np.sum(w)) # Normalize to sum to 1
+optimal_weights = np.array(optimal_weights)
+
+# 4. Plot the distribution of optimal weights
+plt.hist(optimal_weights[:, 0], bins=30, alpha=0.7, label="Posterior dist. of weight for Asset 1", density=True)
+plt.hist(optimal_weights[:, 1], bins=30, alpha=0.7, label="Posterior dist. of weight for Asset 2", density=True)
+plt.title("Distribution of Optimal Portfolio Weights")
+plt.xlabel("Weight")
+plt.legend()
+plt.show()
+Instead of a single "optimal" allocation, the histograms show the full range of plausible optimal weights, directly visualizing the uncertainty inherent in the portfolio construction problem.
+
+
+Bayesian Risk Management (Value-at-Risk)
+
+Value-at-Risk (VaR) is a measure of downside risk. A Bayesian approach generates a full predictive distribution for future returns, from which we can calculate a VaR that properly accounts for parameter uncertainty.
+Python
+
+# 1. Simulate some asset returns with fat tails (Student-T distribution)
+np.random.seed(101)
+# nu=4 implies fatter tails than a normal distribution
+asset_returns = np.random.standard_t(df=4, size=200) * 0.02 # Scaled to be like daily % returns
+
+# 2. Fit a Bayesian Student-T model to the returns
+with pm.Model() as var_model:
+    mu = pm.Normal('mu', mu=0, sigma=0.01)
+    sigma = pm.HalfNormal('sigma', sigma=0.05)
+    nu = pm.Gamma('nu', alpha=2, beta=0.1) # Prior on the degrees-of-freedom
+    
+    likelihood = pm.StudentT('likelihood', nu=nu, mu=mu, sigma=sigma, observed=asset_returns)
+    trace_var = pm.sample(1000, tune=1000)
+    
+    # 3. Generate samples from the posterior predictive distribution
+    ppc = pm.sample_posterior_predictive(trace_var)
+
+# 4. Calculate the 5% VaR from the predictive distribution
+future_returns = ppc.posterior_predictive['likelihood'].values.flatten()
+VaR_95 = np.quantile(future_returns, 0.05)
+
+# 5. Plot the results
+plt.hist(future_returns, bins=100, density=True, label="Posterior Predictive Distribution of Returns")
+plt.axvline(VaR_95, color='red', linestyle='--', lw=2, label=f"95% Value-at-Risk = {VaR_95*100:.2f}%")
+plt.title("Bayesian Value-at-Risk")
+plt.xlabel("1-Day Return")
+plt.legend()
+plt.show()
+The histogram shows our belief about the distribution of tomorrow's return. The red line marks the 5th percentile: we are 95% confident that the loss will not be worse than this value, with our confidence properly reflecting the uncertainty in the model's parameters.
+
+15.3 Machine Learning
+
+Bayesian methods provide powerful tools for machine learning, offering principled regularization, robust uncertainty quantification, and flexible non-parametric models.
+
+
+Priors as Regularization: The Bayesian Lasso
+
+In machine learning, regularization is used to prevent overfitting, especially with high-dimensional data. Placing specific priors on regression coefficients is equivalent to regularization. A Laplace prior corresponds to L1 (Lasso) regularization, which performs feature selection by shrinking irrelevant coefficients exactly to zero.
+Python
+
+# 1. Simulate high-dimensional data where most features are irrelevant
+np.random.seed(24)
+N = 100 # samples
+K = 20  # features
+# True coefficients (only 3 are non-zero)
+true_coeffs = np.array([5, -3, 2] + [0]*(K-3))
+X = np.random.randn(N, K)
+y_lasso = X @ true_coeffs + np.random.normal(0, 2, N)
+
+# 2. Define the Bayesian Lasso model (using Laplace priors)
+with pm.Model() as lasso_model:
+    # Laplace prior encourages sparsity
+    beta = pm.Laplace('beta', mu=0, b=1, shape=K)
+    intercept = pm.Normal('intercept', mu=0, sigma=10)
+    sigma = pm.HalfNormal('sigma', sigma=5)
+    
+    mu = intercept + pm.math.dot(X, beta)
+    likelihood = pm.Normal('likelihood', mu=mu, sigma=sigma, observed=y_lasso)
+    
+    trace_lasso = pm.sample(1000, tune=1500)
+
+# 3. Plot the posteriors of the coefficients
+az.plot_forest(trace_lasso, var_names=['beta'], combined=True, r_hat=True)
+plt.axvline(x=0, color='red', linestyle='--')
+plt.title("Posterior Distributions of Coefficients (Bayesian Lasso)")
+plt.show()
+The forest plot will show that the posteriors for the first three coefficients are clearly away from zero. In contrast, the posteriors for the 17 irrelevant coefficients are sharply peaked at zero, demonstrating the powerful feature selection property of the Laplace prior.
+
+
+Bayesian Neural Networks (BNN)
+
+A BNN places priors on the weights and biases of a neural network. Instead of learning a single set of weights, it infers a full posterior distribution over them. This allows the network to quantify its predictive uncertainty, indicating when it is "not sure" about a prediction.
+Python
+
+from sklearn.datasets import make_moons
+
+# 1. Generate non-linear classification data
+X_bnn, Y_bnn = make_moons(n_samples=200, noise=0.1, random_state=42)
+
+# 2. Define the BNN architecture in PyMC
+n_hidden = 5
+with pm.Model() as bnn_model:
+    # Input -> Hidden Layer 1
+    w1 = pm.Normal('w1', mu=0, sigma=1, shape=(X_bnn.shape[1], n_hidden))
+    b1 = pm.Normal('b1', mu=0, sigma=1, shape=n_hidden)
+    # Hidden Layer 1 -> Output
+    w2 = pm.Normal('w2', mu=0, sigma=1, shape=(n_hidden, 1))
+    b2 = pm.Normal('b2', mu=0, sigma=1, shape=1)
+    
+    # Define the network logic
+    act_1 = pm.math.tanh(pm.math.dot(X_bnn, w1) + b1)
+    output = pm.math.sigmoid(pm.math.dot(act_1, w2) + b2)
+    
+    # Likelihood
+    likelihood = pm.Bernoulli('likelihood', p=output, observed=Y_bnn.reshape(-1, 1))
+    
+    # 3. Fit using fast Variational Inference (ADVI)
+    approx = pm.fit(n=30000, method='advi')
+    trace_bnn = approx.sample(1000)
+
+# 4. Plot the decision boundary with uncertainty
+grid = pm.make_grid(X_bnn, n=100)
+with bnn_model: # Resets the model to use the new grid data
+    pm.set_data({"X_bnn_data": grid})
+    ppc_bnn = pm.sample_posterior_predictive(trace_bnn, var_names=['likelihood'], return_inferencedata=False, random_seed=42)
+
+# Plotting
+plt.figure(figsize=(8,6))
+contour = plt.contourf(grid[:,0].reshape(100,100), grid[:,1].reshape(100,100), ppc_bnn['likelihood'].mean(axis=0).reshape(100,100), cmap='coolwarm', alpha=0.8)
+plt.scatter(X_bnn[Y_bnn==0][:,0], X_bnn[Y_bnn==0][:,1], label='Class 0')
+plt.scatter(X_bnn[Y_bnn==1][:,0], X_bnn[Y_bnn==1][:,1], label='Class 1')
+plt.title("BNN Decision Boundary and Uncertainty")
+plt.colorbar(contour, label="Posterior Mean Probability of Class 1")
+plt.legend()
+plt.show()
+The plot shows a smooth decision boundary. The color saturation indicates certainty: deep red/blue regions are confident predictions, while lighter, purplish regions near the boundary represent high uncertainty.
+
+
+Topic Models: Latent Dirichlet Allocation (LDA)
+
+LDA is a fully Bayesian hierarchical model used to discover abstract "topics" in a collection of documents. It assumes each document is a mixture of topics, and each topic is a distribution over words. While possible to build in PyMC, standard practice is to use optimized libraries like scikit-learn.
+Python
+
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.decomposition import LatentDirichletAllocation
+
+# 1. Sample text data
+corpus = [
+    "The stock market fell due to interest rate hikes and inflation fears",
+    "Investors are moving capital from equity to bonds and cash",
+    "The central bank announced a new monetary policy to fight inflation",
+    "NASA launched a new rocket to the moon for scientific exploration",
+    "The Hubble telescope captured stunning images of distant galaxies",
+    "Space exploration is crucial for scientific advancement and new discoveries"
+]
+
+# 2. Vectorize the text data (convert words to counts)
+vectorizer = CountVectorizer(stop_words='english')
+X_lda = vectorizer.fit_transform(corpus)
+
+# 3. Fit the LDA model (a Bayesian model under the hood)
+lda = LatentDirichletAllocation(n_components=2, random_state=42) # 2 topics: Finance & Space
+lda.fit(X_lda)
+
+# 4. Inspect the topics by printing the top words for each
+def print_top_words(model, feature_names, n_top_words):
+    for topic_idx, topic in enumerate(model.components_):
+        message = f"Topic #{topic_idx}: "
+        message += " ".join([feature_names[i] for i in topic.argsort()[:-n_top_words - 1:-1]])
+        print(message)
+
+print("Discovered Topics:")
+print_top_words(lda, vectorizer.get_feature_names_out(), 5)
+The output will clearly show that the algorithm has discovered one topic dominated by words like "inflation," "market," "bank," and "stock," and another dominated by "space," "exploration," "scientific," and "rocket," successfully identifying the underlying themes in the corpus.
+
+
+Gaussian Processes (GPs)
+
+GPs are a flexible, non-parametric Bayesian approach to regression. Instead of fitting a single function, a GP infers a distribution over functions that are consistent with the data, providing excellent uncertainty quantification.
+Python
+
+# 1. Generate some non-linear data
+np.random.seed(1)
+X_gp = np.linspace(0, 10, 20)[:, None]
+y_gp = np.sin(X_gp).ravel() + np.random.normal(0, 0.2, 20)
+
+# 2. Define and fit the Gaussian Process model in PyMC
+with pm.Model() as gp_model:
+    # Priors for the covariance function hyperparameters
+    length_scale = pm.Gamma("length_scale", alpha=2, beta=1)
+    eta = pm.HalfCauchy("eta", beta=5)
+    
+    # Specify the covariance function (kernel)
+    cov_func = eta**2 * pm.gp.cov.ExpQuad(1, ls=length_scale)
+    gp = pm.gp.Marginal(cov_func=cov_func)
+    
+    # Prior for the observation noise
+    sigma = pm.HalfNormal("sigma", sigma=5)
+    
+    # Likelihood
+    y_ = gp.marginal_likelihood("y", X=X_gp, y=y_gp, noise=sigma)
+    trace_gp = pm.sample(1000, tune=1000)
+
+# 3. Predict on new data points
+X_new = np.linspace(-2, 12, 100)[:, None]
+with gp_model:
+    f_pred = gp.conditional("f_pred", Xnew=X_new)
+    pred_samples = pm.sample_posterior_predictive(trace_gp, var_names=["f_pred"])
+
+# 4. Plot the GP fit and its uncertainty
+plt.figure(figsize=(10, 5))
+plt.plot(X_gp, y_gp, 'o', color='C0', ms=8, label="Observed Data")
+plt.plot(X_new, pred_samples.posterior_predictive["f_pred"].mean(axis=(0,1)), "C1", lw=2, label="Posterior Mean Function")
+az.plot_hdi(X_new.flatten(), pred_samples.posterior_predictive["f_pred"], color='C1', hdi_prob=0.95, fill_kwargs={'alpha': 0.2})
+plt.title("Gaussian Process Regression")
+plt.xlabel("X")
+plt.ylabel("Y")
+plt.legend()
+plt.show()
+The plot beautifully illustrates the power of GPs. The model learns the underlying sine wave and, crucially, the uncertainty (the shaded band) is narrow where we have data and widens dramatically where we don't, perfectly capturing the model's confidence in its predictions.
