@@ -1,0 +1,38 @@
+Chapter 8: MCMC – Part II (Advanced Topics)
+
+Running MCMC is just the start. We must diagnose whether the sampler worked correctly.
+
+8.1 Advanced MCMC: HMC and NUTS
+
+Modern libraries like PyMC use advanced samplers:
+Hamiltonian Monte Carlo (HMC): Uses the gradient (slope) of the posterior to propose efficient, long-distance jumps.
+No-U-Turn Sampler (NUTS): An adaptive version of HMC that automates tuning. It's the reason modern Bayesian modeling is so powerful and easy.
+
+8.2 Convergence Diagnostics
+
+Trace Plots: A plot of the sample values over time. Should look like a "fuzzy caterpillar" with no trends.
+Effective Sample Size (ESS): An estimate of the number of independent samples. We want this to be high.
+Gelman-Rubin Statistic (hatR or R-hat): The most critical diagnostic. It compares the variance between multiple chains to the variance within each chain. If the chains have converged, R-hat should be very close to 1.0 (e.g., < 1.01).
+
+8.3 Code Example: Checking Diagnostics with ArviZ
+
+ArviZ makes diagnostics easy. Let's check the R-hat and ESS from our previous model.
+Python
+
+# Continuing from the non_conjugate_model...
+
+# The summary table automatically includes r_hat and ess
+summary = az.summary(trace_mcmc)
+print(summary)
+
+# You can also create diagnostic plots
+az.plot_trace(trace_mcmc)
+plt.show()
+
+az.plot_ess(trace_mcmc, kind='evolution')
+plt.show()
+The summary table will show r_hat values very close to 1.0 and high ess_bulk and ess_tail values, indicating our sampler converged successfully.
+
+
+
+
