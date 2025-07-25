@@ -1,0 +1,38 @@
+Chapter 4: Bayesian Estimators and Credible Intervals
+
+The posterior distribution is the complete result of our inference. However, we often need to summarize it with a single point estimate or an interval.
+
+4.1 Bayesian Point Estimators
+
+Posterior Mean: The average of the posterior distribution. This is the most common point estimate.
+Posterior Median: The 50th percentile of the posterior. More robust to skewed posteriors.
+Maximum a Posteriori (MAP): The peak (mode) of the posterior. Can be found with optimization, but it ignores the shape of the distribution and can sometimes be misleading.
+
+4.2 Credible Intervals
+
+A credible interval is a range that contains the parameter with a specific posterior probability. An X% credible interval has a direct, intuitive interpretation: "Given the data, there is an X% probability that the true value of the parameter lies within this interval."
+Equal-Tailed Interval (ETI): Formed by taking the quantiles (e.g., the 2.5% and 97.5% quantiles for a 95% interval).
+Highest Posterior Density (HPD) Interval: The narrowest possible interval containing the specified probability.
+
+4.3 Code Example: Summarizing the Posterior
+
+We can easily compute these summaries from our MCMC trace using the arviz library.
+Python
+
+# Continuing from the previous chapter's code...
+
+# Use arviz to get a summary table
+summary = az.summary(trace, var_names=['p'])
+print(summary)
+
+# Extract specific values
+posterior_mean = summary['mean'].values[0]
+posterior_median = summary['median'].values[0]
+credible_interval = summary[['hdi_3%', 'hdi_97%']].values[0] # ArviZ provides HPD by default
+
+print(f"\nPosterior Mean: {posterior_mean:.3f}")
+print(f"Posterior Median: {posterior_median:.3f}")
+print(f"94% Highest Density Interval (HDI): [{credible_interval[0]:.3f}, {credible_interval[1]:.3f}]")
+
+
+
