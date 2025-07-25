@@ -1,0 +1,53 @@
+Chapter 3: Conjugate Priors & Posterior Distributions
+
+In our first example, the Beta prior and Binomial likelihood combined to create a Beta posterior. This is an example of conjugacy.
+
+3.1 The Concept of Conjugacy
+
+A prior distribution is conjugate to a likelihood if the resulting posterior distribution belongs to the same family as the prior.
+The primary benefit is algebraic convenience. It gives us a simple "update rule" to find the posterior without complex math.
+
+3.2 Common Conjugate Pairs
+
+|Likelihood|Parameter | conjugate prior| posterior distribtution update rule |
+| :--- | :---: | :---: | ---: |
+|Binomial|	p (probability)|	Beta|	Beta(prior alpha + #successes, prior beta + #failures)|
+|Poisson|	λ (rate)|	Gamma	|Gamma(prior shape + sum of data, prior rate + #observations)|
+|Normal (known var)|	μ (mean)|	Normal|	A Normal distribution with updated mean and variance.|
+|Multinomial|	p (vector of probs)|	Dirichlet |	Dirichlet(prior alphas + counts in each category)|
+
+
+3.3 Code Example: Conjugacy in PyMC
+
+We can use PyMC to sample from our Beta-Binomial model. The MCMC sampler will produce draws that trace out the analytical posterior distribution, Beta(9, 5).
+Python
+
+import pymc as pm
+import arviz as az
+from scipy.stats import beta
+import matplotlib.pyplot as plt
+import numpy as np
+
+# Analytical posterior parameters from Chapter 1
+alpha_post = 2 + 7
+beta_post = 2 + 3
+
+# 1. Define the model in PyMC
+with pm.Model() as coin_model:
+    # Prior: Beta(2, 2)
+    p = pm.Beta('p', alpha=2.0, beta=2.0)
+    
+    # Likelihood: Binomial(n=10, p) with observed data k=7
+    y = pm.Binomial('y', n=10, p=p, observed=7)
+    
+    # 2. Sample from the posterior using MCMC
+    trace = pm.sample(2000, tune=1000, chains=4)
+
+# 3. Plot the results and compare with the analytical solution
+az.plot_posterior(trace, var_names=['p'], kind='hist')
+x = np.linspace(0, 1, 100)
+plt.plot(x, beta.pdf(x, alpha_post, beta_post), 'r-', lw=3, label=f'Analytical Posterior: Beta({alpha_post},{beta_post})')
+plt.legend()
+plt.show()
+The histogram of samples from PyMC will perfectly match the red curve of the analytical Beta(9, 5) distribution, showing that MCMC converges to the correct answer.
+
