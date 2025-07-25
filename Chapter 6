@@ -1,0 +1,47 @@
+Chapter 6: Bayesian Hypothesis Testing & Model Comparison
+
+How do we decide between two competing hypotheses or models? The Bayesian framework uses the Bayes factor to quantify the evidence provided by the data.
+
+6.1 The Bayes Factor
+
+The Bayes factor (K) is the ratio of the evidence (or marginal likelihood) for two competing models, M₁ and M₂: **K = P(Data | M₁) / P(Data | M₂) **
+Interpretation:
+K > 1: The data are more likely under M₁. The data provide evidence for M₁.
+K < 1: The data are more likely under M₂. The data provide evidence for M₂.
+K ≈ 1: The data do not strongly distinguish between the two models.
+A key advantage is that, unlike p-values, a Bayes factor can quantify evidence for a null hypothesis (e.g., a K of 1/10 means the null is 10 times more likely than the alternative).
+
+6.2 Code Example: Calculating a Bayes Factor
+
+Calculating Bayes factors can be complex. For simple models, we can use the Savage-Dickey density ratio. To test a point null hypothesis (e.g., p = 0.5), the Bayes factor is simply the ratio of the posterior density to the prior density at the point of interest.
+Python
+
+from scipy.stats import beta
+
+# Test M1: p = 0.5 vs M2: p is unknown
+# We use the results from our coin flip example.
+# Posterior is Beta(9, 5), Prior was Beta(2, 2).
+
+# The point we are testing
+p_null = 0.5
+
+# Height of the posterior density at p=0.5
+posterior_density_at_null = beta.pdf(p_null, a=9, b=5)
+
+# Height of the prior density at p=0.5
+prior_density_at_null = beta.pdf(p_null, a=2, b=2)
+
+# Calculate the Bayes Factor in favor of the alternative (M2) over the null (M1)
+# Note: For this to be valid, the prior under M2 must be used. Our Beta(2,2) works.
+BF_10 = prior_density_at_null / posterior_density_at_null # BF in favor of null
+
+print(f"Prior height at p=0.5: {prior_density_at_null:.3f}")
+print(f"Posterior height at p=0.5: {posterior_density_at_null:.3f}")
+print(f"Bayes Factor (K) in favor of the FAIR COIN model: {BF_10:.3f}")
+
+if BF_10 > 1:
+    print("The evidence favors the fair coin model.")
+else:
+    print("The evidence favors the biased coin model.")
+
+
