@@ -1,0 +1,35 @@
+Chapter 11: Hierarchical (Multilevel) Bayesian Models
+
+Data often has a grouped structure (e.g., students in schools). Hierarchical models allow parameters to vary by group, assuming that the group-level parameters themselves come from a shared higher-level distribution. This allows groups to "borrow strength" from each other, leading to more stable estimates. This is also called partial pooling.
+
+11.1 Code Example: The "Eight Schools" Model
+
+This is a classic example of a hierarchical model, estimating the effect of coaching programs in 8 different schools.
+Python
+
+# Data on treatment effects from 8 schools
+J = 8
+y_schools = np.array([28.0, 8.0, -3.0, 7.0, -1.0, 1.0, 18.0, 12.0])
+sigma_schools = np.array([15.0, 10.0, 16.0, 11.0, 9.0, 11.0, 10.0, 18.0])
+
+with pm.Model() as hierarchical_model:
+    # Hyperpriors for the group-level distribution
+    mu = pm.Normal("mu", mu=0, sigma=5)
+    tau = pm.HalfCauchy("tau", beta=5) # Group-level standard deviation
+    
+    # Non-centered parameterization for better sampling
+    theta_offset = pm.Normal("theta_offset", mu=0, sigma=1, shape=J)
+    theta = pm.Deterministic("theta", mu + tau * theta_offset) # School-specific effects
+    
+    # Likelihood
+    obs = pm.Normal("obs", mu=theta, sigma=sigma_schools, observed=y_schools)
+    
+    trace_hierarchical = pm.sample(2000, tune=2000)
+
+az.plot_forest(trace_hierarchical, var_names=["theta"], r_hat=True)
+plt.show()
+The forest plot shows the posterior for each school's effect (theta). Notice how the estimates are "shrunk" from their raw values towards the overall group mean (mu), especially for schools with high uncertainty (large sigma_schools).
+
+
+
+
