@@ -1,0 +1,26 @@
+Chapter 12: Model Diagnostics and Posterior Predictive Checks
+
+A model can converge perfectly but still be a poor fit. We need to check if the model can generate data that looks like the data we actually observed. This is done with Posterior Predictive Checks (PPC).
+
+12.1 The PPC Process
+
+Simulate many new datasets from the model using parameters drawn from the posterior.
+Compare the distribution of these simulated datasets to the original, observed dataset.
+If they look similar, the model is a good fit. If they look different, the model is missing some key feature of the data.
+
+12.2 Code Example: Performing a PPC
+
+Let's check our linear regression model from Chapter 10.
+Python
+
+# Continuing with the linear_model and trace_linear...
+with linear_model:
+    # Generate posterior predictive samples
+    ppc_linear = pm.sample_posterior_predictive(trace_linear, var_names=["y_obs"])
+
+# Plot the PPC
+az.plot_ppc(ppc_linear)
+plt.show()
+The plot_ppc figure shows the density of the observed data (the black line). It is overlaid with the densities of many datasets simulated from the model (the light blue lines). If the black line looks like a typical draw from the blue lines, our model fits well.
+
+
