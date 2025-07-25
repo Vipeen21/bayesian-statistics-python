@@ -1,0 +1,64 @@
+Chapter 1: Bayes’ Theorem & Probability Foundations
+
+This chapter lays the groundwork for our entire course. We begin by revisiting core concepts in probability before introducing the cornerstone of our study: Bayes' theorem.
+
+1.1 Bayes' Theorem: The Engine of Inference
+
+Bayes' theorem is a mathematical rule for updating our beliefs in light of new evidence. In the Bayesian context, we use it to update our beliefs about a parameter or hypothesis, which we'll call θ (theta), after observing data, D.
+The theorem is stated as:
+The Posterior probability of theta given the data is equal to the Likelihood of the data given theta, times the Prior probability of theta, all divided by the Evidence of the data.
+Let's dissect each component:
+Posterior Probability: This is our updated belief about the parameter θ after seeing the data. It's the primary output of a Bayesian analysis.
+Likelihood: This represents the information the data provides. It asks: if the parameter θ had a specific value, what would be the probability of observing the data we saw? This is the same likelihood function used in frequentist statistics.
+Prior Probability: This is our initial belief about the parameter θ before seeing any data. It's where we can incorporate existing knowledge or expert opinion.
+Evidence: This is the total probability of the data, averaged over all possible values of the parameter θ. It acts as a normalization constant, ensuring the posterior is a proper probability distribution. It's often very difficult to calculate directly.
+
+1.2 Example: The Beta-Binomial Model (Coin Flips)
+
+Let's make this concrete. Suppose we want to estimate the bias, p (the probability of heads), of a coin.
+Likelihood: We flip the coin n=10 times and observe k=7 heads. The number of heads follows a Binomial distribution. So, our likelihood is: the probability of the data given p is equal to (10 choose 7) times p⁷ times (1-p)³.
+Prior: We need to specify our prior belief about p. A convenient choice is the Beta distribution, which is defined on the interval from 0 to 1. Let's choose a weakly informative prior, Beta(2, 2), which is centered at 0.5 and suggests we believe the coin is likely fair but are not certain.
+Posterior: Using Bayes' theorem, the posterior is proportional to the likelihood times the prior. We can ignore the normalization constants for now:
+The posterior probability of p, given the data, is proportional to (p⁷ times (1-p)³) multiplied by (p¹ times (1-p)¹).
+Combining these terms by adding the exponents, the posterior is proportional to p⁸ times (1-p)⁴.
+This is the kernel of another Beta distribution! Our posterior is Beta(9, 5). The update rule is simple: the new alpha is the prior alpha plus the number of heads (2+7), and the new beta is the prior beta plus the number of tails (2+3).
+
+1.3 Code Example: Simulating Bayes' Theorem
+
+We can illustrate Bayes' theorem with a simple simulation without using a dedicated library. We'll use a grid approximation.
+Python
+
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.stats import binom
+
+# 1. Define the parameter grid
+# We are approximating the continuous parameter 'p' with 1000 discrete points
+p_grid = np.linspace(0, 1, 1000)
+
+# 2. Define the prior
+# We use a uniform prior, meaning we initially believe all values of p are equally likely.
+# This is a Beta(1, 1) distribution.
+prior = np.repeat(1, 1000)
+
+# 3. Compute the likelihood at each grid point
+# Data: 7 heads in 10 tosses
+likelihood = binom.pmf(k=7, n=10, p=p_grid)
+
+# 4. Compute the unnormalized posterior
+# Posterior is proportional to likelihood * prior
+unstd_posterior = likelihood * prior
+
+# 5. Normalize the posterior so it sums to 1
+posterior = unstd_posterior / np.sum(unstd_posterior)
+
+# Plotting the results
+plt.figure(figsize=(8, 4))
+plt.plot(p_grid, posterior, label="Posterior Distribution")
+plt.xlabel("Probability of Heads (p)")
+plt.ylabel("Posterior Density")
+plt.title("Grid Approximation of the Posterior for a Coin Flip")
+plt.legend()
+plt.show()
+This code calculates the posterior probability for each possible value of p in our grid, showing a peak around 0.7, which is our most likely estimate for the coin's bias given the data.
+
