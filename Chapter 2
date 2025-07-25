@@ -1,0 +1,18 @@
+Chapter 2: The Great Debate: Frequentist vs. Bayesian Statistics
+
+Before we dive deeper, it's essential to understand the philosophical differences between the two major schools of thought in statistics.
+| Feature | Frequentist Statistics | Bayesian Statistics |
+|  :---   | :---:  |  ---:  |
+| Course      | Description | Repos |
+| :-----        |    :----:   |  ----:  |
+| Core Philosophy | Probability is the long-run frequency of an event over many repeated trials. |	Probability is a degree of belief or confidence in a statement, given the evidence. |
+| View of Parameters|	Parameters (e.g., population mean μ) are fixed, unknown constants.	| Parameters are random variables. We can have uncertainty about them and update our beliefs.|
+|Primary Output|	A point estimate and a confidence interval.|	The full posterior probability distribution for the parameter.|
+|Inference Tools|	p-values, hypothesis tests (e.g., t-tests), maximum likelihood estimation. |	Posterior summaries (mean, median), credible intervals, Bayes factors.|
+|Role of Prior Info |	Formally, no place for prior beliefs. Decisions are based only on current data. |	Prior beliefs are a formal part of the model. They are combined with data to form the posterior. |
+|Interpretation |	A 95% confidence interval means: "95% of intervals constructed this way would contain the true parameter." A statement about the procedure. |	A 95% credible interval means: "Given the data, there is a 95% probability that the true parameter lies in this interval." A direct statement about the parameter. |
+
+  In short:
+Frequentists make probability statements about the data, given a fixed parameter.
+Bayesians make probability statements about the parameter, given the observed data.
+The Bayesian approach provides a more intuitive way to talk about uncertainty and a powerful framework for building complex, customized models.
