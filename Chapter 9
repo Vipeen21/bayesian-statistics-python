@@ -1,0 +1,28 @@
+Chapter 9: Variational Inference
+
+MCMC can be slow for very large models. Variational Inference (VI) is a much faster alternative based on optimization, not sampling.
+
+9.1 The Basic Idea
+
+VI finds a simpler, tractable distribution (e.g., a Normal distribution) that is the "closest" possible approximation to the true posterior. It's a trade-off: VI is incredibly fast but can be less accurate than MCMC, often underestimating the variance of the posterior.
+
+9.2 Code Example: VI in PyMC
+
+PyMC makes it easy to switch to VI using pm.fit().
+Python
+
+# Using the same non_conjugate_model definition...
+with non_conjugate_model:
+    # Instead of pm.sample(), use pm.fit() for VI
+    # This returns an approximation object
+    approx = pm.fit(method='advi', n=30000)
+
+# We can then draw samples from this approximation to analyze it
+trace_vi = approx.sample(1000)
+
+# Plot the VI posterior and compare to the MCMC one
+az.plot_posterior(trace_vi, color='blue', hdi_prob=0.94)
+az.plot_posterior(trace_mcmc, color='red', hdi_prob=0.94) # from previous chapter
+plt.suptitle("VI Approximation (Blue) vs. MCMC 'Truth' (Red)")
+plt.show()
+The resulting posterior plots will be very similar, but you might notice the blue VI distributions are slightly narrower than the red MCMC ones.
