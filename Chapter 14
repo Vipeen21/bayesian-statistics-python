@@ -1,0 +1,30 @@
+Chapter 14: Prior Elicitation and Sensitivity Analysis
+
+The choice of prior is a fundamental part of Bayesian modeling. It is crucial to check how sensitive our conclusions are to that choice. A sensitivity analysis involves fitting the model with several different, plausible priors and comparing the results.
+
+14.1 Code Example: Prior Sensitivity
+
+Let's revisit our coin flip example. What if we had used a much stronger prior, believing the coin was almost certainly fair?
+Python
+
+# Data: 7 heads in 10 tosses
+
+# Model 1: Weak prior Beta(2, 2)
+with pm.Model() as weak_prior_model:
+    p = pm.Beta('p', 2.0, 2.0)
+    y = pm.Binomial('y', n=10, p=p, observed=7)
+    trace_weak = pm.sample(1000, tune=500)
+
+# Model 2: Strong prior Beta(50, 50) - strong belief in fairness
+with pm.Model() as strong_prior_model:
+    p = pm.Beta('p', 50.0, 50.0)
+    y = pm.Binomial('y', n=10, p=p, observed=7)
+    trace_strong = pm.sample(1000, tune=500)
+
+# Compare the posteriors
+az.plot_posterior(trace_weak, var_names=['p'], color='blue', hdi_prob=0.94)
+plt.suptitle("Posterior with WEAK Prior")
+az.plot_posterior(trace_strong, var_names=['p'], color='green', hdi_prob=0.94)
+plt.suptitle("Posterior with STRONG Prior")
+plt.show()
+You'll see the posterior from the weak prior is centered around the data's estimate (0.7). The posterior from the strong prior is still centered very close to 0.5; the 10 data points were not enough to overwhelm the very strong prior belief. This shows how influential priors can be, especially with limited data.
