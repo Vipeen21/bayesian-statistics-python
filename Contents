@@ -1,0 +1,15 @@
+Chapter 1: Bayes’ Theorem & Probability Foundations	3
+Chapter 2: The Great Debate: Frequentist vs. Bayesian Statistics	6
+Chapter 3: Conjugate Priors & Posterior Distributions	7
+Chapter 4: Bayesian Estimators and Credible Intervals	9
+Chapter 5: Loss function and decision theory	11
+Chapter 6: Bayesian Hypothesis Testing & Model Comparison	13
+Chapter 7: Markov Chain Monte Carlo (MCMC) – Part I	15
+Chapter 8: MCMC – Part II (Advanced Topics)	17
+Chapter 9: Variational Inference	19
+Chapter 10: Bayesian Linear and Logistic Regression	20
+Chapter 11: Hierarchical (Multilevel) Bayesian Models	23
+Chapter 12: Model Diagnostics and Posterior Predictive Checks	25
+Chapter 13: Bayesian Model Averaging	26
+Chapter 14: Prior Elicitation and Sensitivity Analysis	28
+Chapter 15: Applications – Econometrics, Finance, and Machine Learning	29
