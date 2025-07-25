@@ -1,0 +1,78 @@
+Chapter 10: Bayesian Linear and Logistic Regression
+
+We can now apply our tools to two of the most fundamental models in statistics.
+
+10.1 Bayesian Linear Regression
+
+In a Bayesian linear regression, we place priors on the regression coefficients β and the error standard deviation σ. The result is not just a single best-fit line, but a full posterior distribution of plausible lines.
+
+10.2 Code Example: Bayesian Linear Regression
+
+Python
+
+import pandas as pd
+
+# Load some sample data
+np.random.seed(314)
+x = np.linspace(0, 10, 20)
+y = 2.5 * x + np.random.normal(0, 2.0, 20)
+
+with pm.Model() as linear_model:
+    # Priors for intercept, slope, and error term
+    intercept = pm.Normal('intercept', mu=0, sigma=10)
+    slope = pm.Normal('slope', mu=0, sigma=10)
+    sigma = pm.HalfNormal('sigma', sigma=5)
+
+    # Expected value of y
+    mu = intercept + slope * x
+
+    # Likelihood
+    y_obs = pm.Normal('y_obs', mu=mu, sigma=sigma, observed=y)
+
+    trace_linear = pm.sample(2000, tune=1000)
+
+# Plotting the results
+az.plot_posterior(trace_linear)
+plt.show()
+
+# Plot the regression lines
+plt.scatter(x, y, label='Data')
+pm.plot_posterior_predictive_in_place(trace_linear, model=linear_model, var_names=['y_obs'], kind='mean', color='red', alpha=0.05)
+plt.title('Posterior Mean Regression Lines')
+plt.legend()
+plt.show()
+
+10.3 Bayesian Logistic Regression
+
+For binary outcomes, we use logistic regression. We place priors on the coefficients, which live on the "log-odds" scale.
+
+10.4 Code Example: Bayesian Logistic Regression
+
+Python
+
+# Synthetic data: x predicts a binary outcome y
+np.random.seed(123)
+x_log = np.random.randn(100)
+true_beta0 = 0.5
+true_beta1 = 2.0
+p_log = 1 / (1 + np.exp(-(true_beta0 + true_beta1 * x_log)))
+y_log_data = np.random.binomial(1, p_log)
+
+with pm.Model() as logistic_model:
+    # Priors on the intercept and slope
+    beta0 = pm.Normal('beta0', mu=0, sigma=10)
+    beta1 = pm.Normal('beta1', mu=0, sigma=10)
+    
+    # Linear model and logit link function
+    mu_log = beta0 + beta1 * x_log
+    
+    # Likelihood
+    y_obs_log = pm.Bernoulli('y_obs', logit_p=mu_log, observed=y_log_data)
+    
+    trace_logistic = pm.sample(2000, tune=1000)
+
+az.plot_posterior(trace_logistic)
+plt.show()
+
+
+
