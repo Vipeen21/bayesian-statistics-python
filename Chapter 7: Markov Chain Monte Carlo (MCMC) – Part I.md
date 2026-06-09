@@ -25,7 +25,7 @@ Let $\theta^{(t)}$ denote the current state of the parameter vector in a continu
 If the proposal distribution is symmetric, such that $q(\theta^* \mid \theta^{(t)}) = q(\theta^{(t)} \mid \theta^*)$ (e.g., a Gaussian random walk), the expression reduces to the standard Metropolis Hastings ratio:
 
 
-```
+```math
 \alpha(\theta^{(t)}, \theta^*) = \min\left(1, \, \frac{P(D \mid \theta^*) P(\theta^*)}{P(D \mid \theta^{(t)}) P(\theta^{(t)})}\right) = \min\left(1, \, \frac{\text{Unnormalized Posterior}(\theta^*)}{\text{Unnormalized Posterior}(\theta^{(t)})}\right)
 ```
 
