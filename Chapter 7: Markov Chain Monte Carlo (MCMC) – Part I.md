@@ -17,13 +17,14 @@ Let $\theta^{(t)}$ denote the current state of the parameter vector in a continu
 
 $$\alpha(\theta^{(t)}, \theta^*) = \min\left(1, \, \frac{P(D \mid \theta^*) P(\theta^*) \, q(\theta^{(t)} \mid \theta^*)}{P(D \mid \theta^{(t)}) P(\theta^{(t)}) \, q(\theta^* \mid \theta^{(t)})}\right)$$
 
-If the proposal distribution is symmetric, such that $q(\theta^* \mid \theta^{(t)}) = q(\theta^{(t)} \mid \theta^*)$ (e.g., a Gaussian random walk), the expression reduces to the standard Metropolis ratio:
+If the proposal distribution is symmetric, such that $q(\theta^* \mid \theta^{(t)}) = q(\theta^{(t)} \mid \theta^*)$ (e.g., a Gaussian random walk), the expression reduces to the standard Metropolis-Hastings ratio:
 
 $$\alpha(\theta^{(t)}, \theta^*) = \min\left(1, \, \frac{P(D \mid \theta^*) P(\theta^*)}{P(D \mid \theta^{(t)}) P(\theta^{(t)})}\right) = \min\left(1, \, \frac{\text{Unnormalized Posterior}(\theta^*)}{\text{Unnormalized Posterior}(\theta^{(t)})}\right)$$
 
 A random uniform variable $u \sim \mathcal{U}(0, 1)$ is sampled. The next step in the Markov chain is determined by the decision rule:
 
 $$\theta^{(t+1)} = \begin{cases} \theta^* & \text{if } u \le \alpha(\theta^{(t)}, \theta^*) \\ \theta^{(t)} & \text{if } u > \alpha(\theta^{(t)}, \theta^*) \end{cases}$$
+
 ---
 
 ## 7.2 Gibbs Sampling
@@ -34,15 +35,15 @@ Instead of proposing a simultaneous multi-axis shift across the entire parameter
 
 ### The Cyclic Update Architecture
 
-Given a $d$-dimensional parameter state vector at iteration $t$, the transition to iteration $t+1$ executes through a systematic loop of conditional extractions:
+The systematic loop of conditional extractions defining the transition from iteration $t$ to $t+1$ for a $d$-dimensional parameter state vector is structured below:
 
-$$\begin{aligned}
-\theta_1^{(t+1)} &\sim P(\theta_1 \mid \theta_2^{(t)}, \theta_3^{(t)}, \dots, \theta_d^{(t)}, D) \\
-\theta_2^{(t+1)} &\sim P(\theta_2 \mid \theta_1^{(t+1)}, \theta_3^{(t)}, \dots, \theta_d^{(t)}, D) \\
-\theta_3^{(t+1)} &\sim P(\theta_3 \mid \theta_1^{(t+1)}, \theta_2^{(t+1)}, \dots, \theta_d^{(t)}, D) \\
-&\;\vdots \\
-\theta_d^{(t+1)} &\sim P(\theta_d \mid \theta_1^{(t+1)}, \theta_2^{(t+1)}, \dots, \theta_{d-1}^{(t+1)}, D)
-\end{aligned}$$
+| Target Parameter Sub-Space | Structural Conditional Distribution |
+| --- | --- |
+| **Coordinate 1 Update** | $\theta_1^{(t+1)} \sim P(\theta_1 \mid \theta_2^{(t)}, \theta_3^{(t)}, \dots, \theta_d^{(t)}, D)$ |
+| **Coordinate 2 Update** | $\theta_2^{(t+1)} \sim P(\theta_2 \mid \theta_1^{(t+1)}, \theta_3^{(t)}, \dots, \theta_d^{(t)}, D)$ |
+| **Coordinate 3 Update** | $\theta_3^{(t+1)} \sim P(\theta_3 \mid \theta_1^{(t+1)}, \theta_2^{(t+1)}, \dots, \theta_d^{(t)}, D)$ |
+| $\quad\vdots$ | $\quad\vdots$ |
+| **Coordinate d Update** | $\theta_d^{(t+1)} \sim P(\theta_d \mid \theta_1^{(t+1)}, \theta_2^{(t+1)}, \dots, \theta_{d-1}^{(t+1)}, D)$ |
 
 > **Operational Property of Gibbs Trajectories:**
 > Because the proposal steps are drawn directly from the exact full conditional distributions, the acceptance probability $\alpha$ evaluates identically to 1 at every step. This makes Gibbs sampling highly efficient for models with conjugate sub-structures, though it remains prone to slow convergence when parameters exhibit high posterior correlation.
