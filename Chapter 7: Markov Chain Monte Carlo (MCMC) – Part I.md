@@ -27,7 +27,7 @@ If the proposal distribution is symmetric, such that $q(\theta^* \mid \theta^{(t
 
 ```
 \alpha(\theta^{(t)}, \theta^*) = \min\left(1, \, \frac{P(D \mid \theta^*) P(\theta^*)}{P(D \mid \theta^{(t)}) P(\theta^{(t)})}\right) = \min\left(1, \, \frac{\text{Unnormalized Posterior}(\theta^*)}{\text{Unnormalized Posterior}(\theta^{(t)})}\right)
-```$$
+```
 
 A random uniform variable $u \sim \mathcal{U}(0, 1)$ is sampled. The next step in the Markov chain is determined by the decision rule:
 
