@@ -10,8 +10,6 @@ The Metropolis-Hastings (MH) algorithm forms the foundational benchmark for stoc
 
 ### Mathematical Mechanics of the MH Sequence
 
- $$\alpha(\theta^{(t)}, \theta^*) = \min\left(1, \, \frac{P(D \mid \theta^*) P(\theta^*) \, q(\theta^{(t)} \mid \theta^*)}{P(D \mid \theta^{(t)}) P(\theta^{(t)}) \, q(\theta^* \mid \theta^{(t)})}\right)$$
-
 Let $\theta^{(t)}$ denote the current state of the parameter vector in a continuous space $\Theta$. The algorithm transitions to state $\theta^{(t+1)}$ via a two-stage stochastic optimization pipeline:
 
 1. **Proposal Phase:** A candidate state $\theta^*$ is drawn from a user-defined proposal distribution (or transition kernel) $q(\theta^* \mid \theta^{(t)})$.
@@ -19,7 +17,7 @@ Let $\theta^{(t)}$ denote the current state of the parameter vector in a continu
 
 $$\alpha(\theta^{(t)}, \theta^*) = \min\left(1, \, \frac{P(D \mid \theta^*) P(\theta^*) \, q(\theta^{(t)} \mid \theta^*)}{P(D \mid \theta^{(t)}) P(\theta^{(t)}) \, q(\theta^* \mid \theta^{(t)})}\right)$$
 
-If the proposal distribution is symmetric, such that $q(\theta^* \mid \theta^{(t)}) = q(\theta^{(t)} \mid \theta^*)$ (e.g., a Gaussian random walk), the expression reduces to the standard Metropolis-Hastings ratio:
+If the proposal distribution is symmetric, such that $q(\theta^* \mid \theta^{(t)}) = q(\theta^{(t)} \mid \theta^*)$ (e.g., a Gaussian random walk), the expression reduces to the standard Metropolis Hastings ratio:
 
 $$\alpha(\theta^{(t)}, \theta^*) = \min\left(1, \, \frac{P(D \mid \theta^*) P(\theta^*)}{P(D \mid \theta^{(t)}) P(\theta^{(t)})}\right) = \min\left(1, \, \frac{\text{Unnormalized Posterior}(\theta^*)}{\text{Unnormalized Posterior}(\theta^{(t)})}\right)$$
 
@@ -37,15 +35,15 @@ Instead of proposing a simultaneous multi-axis shift across the entire parameter
 
 ### The Cyclic Update Architecture
 
-The systematic loop of conditional extractions defining the transition from iteration $t$ to $t+1$ for a $d$-dimensional parameter state vector is structured below:
+Given a $d$-dimensional parameter state vector at iteration $t$, the transition to iteration $t+1$ executes through a systematic loop of conditional extractions:
 
-| Target Parameter Sub-Space | Structural Conditional Distribution |
-| --- | --- |
-| **Coordinate 1 Update** | $\theta_1^{(t+1)} \sim P(\theta_1 \mid \theta_2^{(t)}, \theta_3^{(t)}, \dots, \theta_d^{(t)}, D)$ |
-| **Coordinate 2 Update** | $\theta_2^{(t+1)} \sim P(\theta_2 \mid \theta_1^{(t+1)}, \theta_3^{(t)}, \dots, \theta_d^{(t)}, D)$ |
-| **Coordinate 3 Update** | $\theta_3^{(t+1)} \sim P(\theta_3 \mid \theta_1^{(t+1)}, \theta_2^{(t+1)}, \dots, \theta_d^{(t)}, D)$ |
-| $\quad\vdots$ | $\quad\vdots$ |
-| **Coordinate d Update** | $\theta_d^{(t+1)} \sim P(\theta_d \mid \theta_1^{(t+1)}, \theta_2^{(t+1)}, \dots, \theta_{d-1}^{(t+1)}, D)$ |
+$$\begin{aligned}
+\theta_1^{(t+1)} &\sim P(\theta_1 \mid \theta_2^{(t)}, \theta_3^{(t)}, \dots, \theta_d^{(t)}, D) \\
+\theta_2^{(t+1)} &\sim P(\theta_2 \mid \theta_1^{(t+1)}, \theta_3^{(t)}, \dots, \theta_d^{(t)}, D) \\
+\theta_3^{(t+1)} &\sim P(\theta_3 \mid \theta_1^{(t+1)}, \theta_2^{(t+1)}, \dots, \theta_d^{(t)}, D) \\
+&\;\vdots \\
+\theta_d^{(t+1)} &\sim P(\theta_d \mid \theta_1^{(t+1)}, \theta_2^{(t+1)}, \dots, \theta_{d-1}^{(t+1)}, D)
+\end{aligned}$$
 
 > **Operational Property of Gibbs Trajectories:**
 > Because the proposal steps are drawn directly from the exact full conditional distributions, the acceptance probability $\alpha$ evaluates identically to 1 at every step. This makes Gibbs sampling highly efficient for models with conjugate sub-structures, though it remains prone to slow convergence when parameters exhibit high posterior correlation.
