@@ -17,14 +17,13 @@ Let $\theta^{(t)}$ denote the current state of the parameter vector in a continu
 
 $$\alpha(\theta^{(t)}, \theta^*) = \min\left(1, \, \frac{P(D \mid \theta^*) P(\theta^*) \, q(\theta^{(t)} \mid \theta^*)}{P(D \mid \theta^{(t)}) P(\theta^{(t)}) \, q(\theta^* \mid \theta^{(t)})}\right)$$
 
-If the proposal distribution is symmetric, such that $q(\theta^* \mid \theta^{(t)}) = q(\theta^{(t)} \mid \theta^*)$ (e.g., a Gaussian random walk), the expression reduces to the standard Metropolis Hastings ratio:
+If the proposal distribution is symmetric, such that $q(\theta^* \mid \theta^{(t)}) = q(\theta^{(t)} \mid \theta^*)$ (e.g., a Gaussian random walk), the expression reduces to the standard Metropolis ratio:
 
 $$\alpha(\theta^{(t)}, \theta^*) = \min\left(1, \, \frac{P(D \mid \theta^*) P(\theta^*)}{P(D \mid \theta^{(t)}) P(\theta^{(t)})}\right) = \min\left(1, \, \frac{\text{Unnormalized Posterior}(\theta^*)}{\text{Unnormalized Posterior}(\theta^{(t)})}\right)$$
 
 A random uniform variable $u \sim \mathcal{U}(0, 1)$ is sampled. The next step in the Markov chain is determined by the decision rule:
 
 $$\theta^{(t+1)} = \begin{cases} \theta^* & \text{if } u \le \alpha(\theta^{(t)}, \theta^*) \\ \theta^{(t)} & \text{if } u > \alpha(\theta^{(t)}, \theta^*) \end{cases}$$
-
 ---
 
 ## 7.2 Gibbs Sampling
