@@ -31,7 +31,9 @@ If the proposal distribution is symmetric, such that $q(\theta^* \mid \theta^{(t
 
 A random uniform variable $u \sim \mathcal{U}(0, 1)$ is sampled. The next step in the Markov chain is determined by the decision rule:
 
-$$\theta^{(t+1)} = \begin{cases} \theta^* & \text{if } u \le \alpha(\theta^{(t)}, \theta^*) \\ \theta^{(t)} & \text{if } u > \alpha(\theta^{(t)}, \theta^*) \end{cases}$$
+```math
+\theta^{(t+1)} = \begin{cases} \theta^* & \text{if } u \le \alpha(\theta^{(t)}, \theta^*) \\ \theta^{(t)} & \text{if } u > \alpha(\theta^{(t)}, \theta^*) \end{cases}
+```
 
 ---
 
@@ -45,13 +47,14 @@ Instead of proposing a simultaneous multi-axis shift across the entire parameter
 
 Given a $d$-dimensional parameter state vector at iteration $t$, the transition to iteration $t+1$ executes through a systematic loop of conditional extractions:
 
-$$\begin{aligned}
+```math\begin{aligned}
 \theta_1^{(t+1)} &\sim P(\theta_1 \mid \theta_2^{(t)}, \theta_3^{(t)}, \dots, \theta_d^{(t)}, D) \\
 \theta_2^{(t+1)} &\sim P(\theta_2 \mid \theta_1^{(t+1)}, \theta_3^{(t)}, \dots, \theta_d^{(t)}, D) \\
 \theta_3^{(t+1)} &\sim P(\theta_3 \mid \theta_1^{(t+1)}, \theta_2^{(t+1)}, \dots, \theta_d^{(t)}, D) \\
 &\;\vdots \\
 \theta_d^{(t+1)} &\sim P(\theta_d \mid \theta_1^{(t+1)}, \theta_2^{(t+1)}, \dots, \theta_{d-1}^{(t+1)}, D)
-\end{aligned}$$
+\end{aligned}
+```
 
 > **Operational Property of Gibbs Trajectories:**
 > Because the proposal steps are drawn directly from the exact full conditional distributions, the acceptance probability $\alpha$ evaluates identically to 1 at every step. This makes Gibbs sampling highly efficient for models with conjugate sub-structures, though it remains prone to slow convergence when parameters exhibit high posterior correlation.
