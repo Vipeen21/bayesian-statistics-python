@@ -54,7 +54,7 @@ Given a $d$-dimensional parameter state vector at iteration $t$, the transition 
 &\;\vdots \\
 \theta_d^{(t+1)} &\sim P(\theta_d \mid \theta_1^{(t+1)}, \theta_2^{(t+1)}, \dots, \theta_{d-1}^{(t+1)}, D)
 \end{aligned}
-```
+``` 
 
 > **Operational Property of Gibbs Trajectories:**
 > Because the proposal steps are drawn directly from the exact full conditional distributions, the acceptance probability $\alpha$ evaluates identically to 1 at every step. This makes Gibbs sampling highly efficient for models with conjugate sub-structures, though it remains prone to slow convergence when parameters exhibit high posterior correlation.
