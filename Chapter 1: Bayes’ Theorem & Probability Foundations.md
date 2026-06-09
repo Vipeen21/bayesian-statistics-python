@@ -1,80 +1,113 @@
 
----
-
 # Chapter 1: Bayes’ Theorem & Probability Foundations
 
-This chapter lays the groundwork for our entire course. We begin by revisiting core concepts in probability before introducing the cornerstone of our study: Bayes' theorem.
+This chapter establishes the theoretical foundations of Bayesian inference. We begin by defining the mathematical mechanisms of probability updates before constructing the formal architecture of Bayes' theorem.
 
-## 1.1 Bayes' Theorem: The Engine of Inference
+---
 
-Bayes' theorem is a mathematical rule for updating our beliefs in light of new evidence. In the Bayesian context, we use it to update our beliefs about a parameter or hypothesis, which we'll call $\theta$ (theta), after observing data, $D$.
+## 1.1 Mathematical Architecture of Bayesian Inference
 
-The theorem is stated as:
+Bayes' theorem provides a rigorous axiomatic framework for updating a prior probability distribution in light of empirical evidence. Within the context of statistical inference, let $\theta \in \Theta$ denote the parameter space of interest (or the underlying hypothesis), and let $D$ represent the observed data vector sample space.
+
+The conditional probability mapping is formally defined as:
 
 $$P(\theta | D) = \frac{P(D | \theta) P(\theta)}{P(D)}$$
 
-> **Bayes' Theorem in Plain English:**
-> The Posterior probability of theta given the data is equal to the Likelihood of the data given theta, times the Prior probability of theta, all divided by the Evidence of the data.
+### Structural Components of the Theorem
 
-Let's dissect each component:
+| Component | Mathematical Notation | Functional Definition |
+| --- | --- | --- |
+| **Posterior Probability** | $P(\theta \| D$ | The conditional probability distribution of the parameter $\theta$ updated after conditioning on the observed empirical data $D$. |
+| **Likelihood Function** | $P(D \| \theta$ | The probability of observing data $D$ given a specific parameter configuration $\theta$. This functions as the objective data-generating mechanism. |
+| **Prior Probability** | $P(\theta)$ | The marginal probability distribution expressing state-of-knowledge constraints or beliefs regarding $\theta$ prior to data observation. |
+| **Marginal Likelihood (Evidence)** | $P(D)$ | The normalizing constant calculated by integrating out the parameter space: $P(D) = \int_{\Theta} P(D \| \theta) P(\theta) d\thet$. |
 
-* **Posterior Probability ($P(\theta | D)$):** This is our updated belief about the parameter $\theta$ after seeing the data. It's the primary output of a Bayesian analysis.
-* **Likelihood ($P(D | \theta)$):** This represents the information the data provides. It asks: if the parameter $\theta$ had a specific value, what would be the probability of observing the data we saw? This is the same likelihood function used in frequentist statistics.
-* **Prior Probability ($P(\theta)$):** This is our initial belief about the parameter $\theta$ before seeing any data. It's where we can incorporate existing knowledge or expert opinion.
-* **Evidence ($P(D)$):** This is the total probability of the data, averaged over all possible values of the parameter $\theta$. It acts as a normalization constant, ensuring the posterior is a proper probability distribution. It's often very difficult to calculate directly.
-
----
-
-## 1.2 Example: The Beta-Binomial Model (Coin Flips)
-
-Let's make this concrete. Suppose we want to estimate the bias, $p$ (the probability of heads), of a coin.
-
-* **Likelihood:** We flip the coin $n = 10$ times and observe $k = 7$ heads. The number of heads follows a Binomial distribution. So, our likelihood is: the probability of the data given $p$ is equal to $\binom{10}{7} p^7 (1-p)^3$.
-* **Prior:** We need to specify our prior belief about $p$. A convenient choice is the Beta distribution, which is defined on the interval from 0 to 1. Let's choose a weakly informative prior, $\text{Beta}(2, 2)$, which is centered at 0.5 and suggests we believe the coin is likely fair but are not certain.
-* **Posterior:** Using Bayes' theorem, the posterior is proportional to the likelihood times the prior. We can ignore the normalization constants for now:
-The posterior probability of $p$, given the data, is proportional to $\left(p^7 \times (1-p)^3\right)$ multiplied by $\left(p^1 \times (1-p)^1\right)$.
-Combining these terms by adding the exponents, the posterior is proportional to $p^8 \times (1-p)^4$. This is the kernel of another Beta distribution!
-
-Our posterior is $\text{Beta}(9, 5)$. The update rule is simple: the new $\alpha$ is the prior $\alpha$ plus the number of heads ($2+7$), and the new $\beta$ is the prior $\beta$ plus the number of tails ($2+3$).
+> **Axiomatic Interpretation:**
+> The posterior distribution acts as a compromise between the historical bounds set by the prior distribution and the empirical realities captured by the likelihood function.
 
 ---
 
-## 1.3 Code Example: Simulating Bayes' Theorem
+## 1.2 Parametric Paradigm: The Beta-Binomial Conjugate Model
 
-We can illustrate Bayes' theorem with a simple simulation without using a dedicated library. We'll use a grid approximation.
+To analyze the operational mechanics of this inference engine, we examine the problem of estimating the latent bias parameter $p$ of a Bernoulli data-generating process (e.g., sequential coin tosses).
+
+### 1. Data-Generating Process & Likelihood
+
+Given a sequence of $n$ independent and identically distributed (i.i.d.) Bernoulli trials resulting in $k$ successes, the joint probability mass function defines the Binomial likelihood:
+
+$$P(D | p) = \binom{n}{k} p^k (1-p)^{n-k}$$
+
+For an empirical sample where $n = 10$ and $k = 7$:
+
+$$P(D | p) = \binom{10}{7} p^7 (1-p)^3$$
+
+### 2. Prior Specification
+
+To model our prior state of knowledge regarding $p \in [0,1]$, we utilize the Beta distribution family. A weakly informative prior is specified using hyperparameters $\alpha_0 = 2$ and $\beta_0 = 2$:
+
+$$P(p) = \frac{1}{\text{B}(\alpha_0, \beta_0)} p^{\alpha_0 - 1} (1-p)^{\beta_0 - 1} = \frac{1}{\text{B}(2, 2)} p^1 (1-p)^1$$
+
+### 3. Posterior Derivation via Conjugacy
+
+Because the Beta distribution is the conjugate prior for a Binomial likelihood, the posterior distribution belongs to the same parametric family. Dropping constants independent of $p$ yields the unnormalized posterior kernel:
+
+$$P(p | D) \propto P(D | p) \times P(p)$$
+
+$$P(p | D) \propto \left[ p^7 (1-p)^3 \right] \times \left[ p^1 (1-p)^1 \right]$$
+
+$$P(p | D) \propto p^{8} (1-p)^{4}$$
+
+This kernel uniquely identifies a revised Beta distribution with updated hyperparameter dimensions:
+
+$$\alpha_{\text{post}} = \alpha_0 + k = 2 + 7 = 9$$
+
+$$\beta_{\text{post}} = \beta_0 + (n - k) = 2 + 3 = 5$$
+
+Thus, the exact analytical posterior distribution is $\text{Beta}(9, 5)$.
+
+---
+
+## 1.3 Computational Simulation: Deterministic Grid Approximation
+
+When analytical solutions are intractable, numerical approximations must be employed. The script below implements a deterministic grid approximation over a discrete parameter space to map out the density functions without relying on probabilistic programming sampling libraries.
 
 ```python
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import binom
 
-# 1. Define the parameter grid
-# We are approximating the continuous parameter 'p' with 1000 discrete points
-p_grid = np.linspace(0, 1, 1000)
+# 1. Parameter Space Discretization
+# Constructing a uniform grid over the bounded domain p in [0, 1]
+GRID_RESOLUTION = 1000
+p_grid = np.linspace(0, 1, GRID_RESOLUTION)
 
-# 2. Define the prior
-# We use a uniform prior, meaning we initially believe all values of p are equally likely.
-# This is a Beta(1, 1) distribution.
-prior = np.repeat(1, 1000)
+# 2. Prior Density Initialization
+# Assuming a uniform distribution across the grid coordinates, representing a Beta(1,1) boundary
+prior = np.repeat(1.0, GRID_RESOLUTION)
 
-# 3. Compute the likelihood at each grid point
-# Data: 7 heads in 10 tosses
-likelihood = binom.pmf(k=7, n=10, p=p_grid)
+# 3. Likelihood Evaluation
+# Evaluating the Binomial PMF for k=7 successes out of n=10 experimental trials
+observed_successes = 7
+total_trials = 10
+likelihood = binom.pmf(k=observed_successes, n=total_trials, p=p_grid)
 
-# 4. Compute the unnormalized posterior
-# Posterior is proportional to likelihood * prior
-unstd_posterior = likelihood * prior
+# 4. Posterior Calculation
+# Computing the unnormalized joint distribution via element-wise multiplication
+unnormalized_posterior = likelihood * prior
 
-# 5. Normalize the posterior so it sums to 1
-posterior = unstd_posterior / np.sum(unstd_posterior)
+# 5. Numerical Integration (Normalization)
+# Applying Riemann sums to ensure the total mass integrates to unity
+posterior = unnormalized_posterior / np.sum(unnormalized_posterior)
 
-# Plotting the results
-plt.figure(figsize=(8, 4))
-plt.plot(p_grid, posterior, label="Posterior Distribution")
-plt.xlabel("Probability of Heads (p)")
-plt.ylabel("Posterior Density")
-plt.title("Grid Approximation of the Posterior for a Coin Flip")
-plt.legend()
+# 6. Visualization of the Posterior Vector Space
+plt.figure(figsize=(9, 5))
+plt.plot(p_grid, posterior, label="Posterior Density $P(p|D)$", color="#1f4e79", linewidth=2)
+plt.fill_between(p_grid, 0, posterior, color="#1f4e79", alpha=0.15)
+plt.xlabel("Latent Success Parameter ($p$)", fontsize=11)
+plt.ylabel("Probability Density", fontsize=11)
+plt.title("Deterministic Grid Approximation of the Posterior Distribution", fontsize=12, fontweight="bold")
+plt.grid(True, linestyle="--", alpha=0.5)
+plt.legend(frameon=True)
 plt.show()
 
 ```
