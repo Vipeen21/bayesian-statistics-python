@@ -12,7 +12,8 @@ The Metropolis-Hastings (MH) algorithm forms the foundational benchmark for stoc
 
 Let $\theta^{(t)}$ denote the current state of the parameter vector in a continuous space $\Theta$. The algorithm transitions to state $\theta^{(t+1)}$ via a two-stage stochastic optimization pipeline:
 
-1. **Proposal Phase:** A candidate state $\theta^*$ is drawn from a user-defined proposal distribution (or transition kernel) $q(\theta^* \mid \theta^{(t)})$.
+1. **Proposal Phase:** A candidate state $`\theta^*`$
+ is drawn from a user-defined proposal distribution (or transition kernel) $`q(\theta^* \mid \theta^{(t)})`$.
 2. **Acceptance-Rejection Phase:** The candidate state is evaluated against the localized density volume of the current state. The probability of transition acceptance, $\alpha(\theta^{(t)}, \theta^*)$, is computed precisely as:
 
 $$\alpha(\theta^{(t)}, \theta^*) = \min\left(1, \, \frac{P(D \mid \theta^*) P(\theta^*) \, q(\theta^{(t)} \mid \theta^*)}{P(D \mid \theta^{(t)}) P(\theta^{(t)}) \, q(\theta^* \mid \theta^{(t)})}\right)$$
