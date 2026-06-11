@@ -17,10 +17,10 @@ $$P(\theta | D) = \frac{P(D | \theta) P(\theta)}{P(D)}$$
 
 | Component | Mathematical Notation | Functional Definition |
 | --- | --- | --- |
-| **Posterior Probability** | $P(\theta \| D$ | The conditional probability distribution of the parameter $\theta$ updated after conditioning on the observed empirical data $D$. |
-| **Likelihood Function** | $P(D \| \theta$ | The probability of observing data $D$ given a specific parameter configuration $\theta$. This functions as the objective data-generating mechanism. |
+| **Posterior Probability** | $P(\theta \| D)$ | The conditional probability distribution of the parameter $\theta$ updated after conditioning on the observed empirical data $D$. |
+| **Likelihood Function** | $P(D \| \theta)$ | The probability of observing data $D$ given a specific parameter configuration $\theta$. This functions as the objective data-generating mechanism. |
 | **Prior Probability** | $P(\theta)$ | The marginal probability distribution expressing state-of-knowledge constraints or beliefs regarding $\theta$ prior to data observation. |
-| **Marginal Likelihood (Evidence)** | $P(D)$ | The normalizing constant calculated by integrating out the parameter space: $P(D) = \int_{\Theta} P(D \| \theta) P(\theta) d\thet$. |
+| **Marginal Likelihood (Evidence)** | $P(D)$ | The normalizing constant calculated by integrating out the parameter space: $P(D) = \int_{\Theta} P(D \| \theta) P(\theta) d\theta$. |
 
 > **Axiomatic Interpretation:**
 > The posterior distribution acts as a compromise between the historical bounds set by the prior distribution and the empirical realities captured by the likelihood function.
