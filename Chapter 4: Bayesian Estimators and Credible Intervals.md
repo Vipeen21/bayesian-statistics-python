@@ -8,11 +8,11 @@ While the joint posterior distribution $P(\theta \mid D)$ encapsulates the compl
 
 Bayesian point estimation treats parameter selection as an optimization problem over a localized loss domain. Rather than relying on asymptotic behavior, we extract central tendency measures directly from the conditioned probability density function.
 
+
 ### Mathematical Foundations of Classical Point Summaries
 
-
 | Estimator Class | Mathematical Formulation | Optimization Characterization |
-| --- | --- | --- |
+| :--- | :--- | :--- |
 | **Posterior Mean** | $\hat{\theta}_{\text{Mean}} = \mathbb{E}[\theta \mid D] = \int_{\Theta} \theta \, P(\theta \mid D) \, d\theta$ | Minimizes expected quadratic loss: $L(\theta, \hat{\theta}) = (\theta - \hat{\theta})^2$. Extremely sensitive to heavy tails. |
 | **Posterior Median** | $\hat{\theta}_{\text{Median}} \implies \int_{-\infty}^{\hat{\theta}} P(\theta \mid D) \, d\theta = 0.5$ | Minimizes expected absolute error loss: $L(\theta, \hat{\theta}) = \lvert \theta - \hat{\theta} \rvert$. Highly robust to skewness. |
 | **Maximum A Posteriori (MAP)** | $\hat{\theta}_{\text{MAP}} = \arg\max_{\theta} P(\theta \mid D) = \arg\max_{\theta} P(D \mid \theta)P(\theta)$ | Minimizes a 0-1 loss framework. Represents the localized mode; ignores overall distribution volume and geometry. |
