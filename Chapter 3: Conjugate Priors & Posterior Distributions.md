@@ -10,7 +10,9 @@ Let $\mathcal{F}$ denote a class of probability distributions over a parameter s
 
 Formally, let $\mathcal{P}$ represent the family of prior distributions, and let $\mathcal{L}$ denote the parametric family of the likelihood. Conjugacy implies a closed algebraic mapping:
 
-$$\left\{ P(\theta) \in \mathcal{P} \quad \wedge \quad P(D \mid \theta) \in \mathcal{L} \right\} \implies P(\theta \mid D) \in \mathcal{P}$$
+```math
+\left\{ P(\theta) \in \mathcal{P} \quad \wedge \quad P(D \mid \theta) \in \mathcal{L} \right\} \implies P(\theta \mid D) \in \mathcal{P}
+```
 
 ### Analytical and Pedagogical Significance
 
