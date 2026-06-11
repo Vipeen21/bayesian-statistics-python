@@ -25,34 +25,11 @@ Formally, let $\mathcal{P}$ represent the family of prior distributions, and let
 
 The table below catalogs the fundamental conjugate pairs utilizing standard statistical distribution families alongside their closed-form hyperparameter update mechanisms.
 
-| Observational Likelihood Model $P(D \mid \theta)$ | Target Latent Parameter ($\theta$) | Assigned Conjugate Prior $P(\theta)$ | Functional Hyperparameter Update Rule ($P(\theta \mid D)$) |
-| --- | --- | --- | --- |
-| **Binomial**<br>
-
-<br>$\mathcal{B}(n, p)$ | $p$ (Success Probability) | **Beta**<br>
-
-<br>$\text{Beta}(\alpha, \beta)$ | $\alpha_{\text{post}} = \alpha + \sum_{i=1}^n x_i$<br>
-
-<br>$\beta_{\text{post}} = \beta + n - \sum_{i=1}^n x_i$ |
-| **Poisson**<br>
-
-<br>$\mathcal{P}oi(\lambda)$ | $\lambda$ (Rate Parameter) | **Gamma**<br>
-
-<br>$\text{Gamma}(\alpha, \beta)$ | $\alpha_{\text{post}} = \alpha + \sum_{i=1}^n x_i$<br>
-
-<br>$\beta_{\text{post}} = \beta + n$ |
-| **Normal** (Known Variance $\sigma^2$)<br>
-
-<br>$\mathcal{N}(\mu, \sigma^2)$ | $\mu$ (Population Mean) | **Normal**<br>
-
-<br>$\mathcal{N}(\mu_0, \sigma_0^2)$ | $\mu_{\text{post}} = \left(\frac{\mu_0}{\sigma_0^2} + \frac{\sum x_i}{\sigma^2}\right) \cdot \sigma_{\text{post}}^2$<br>
-
-<br>$\sigma_{\text{post}}^2 = \left(\frac{1}{\sigma_0^2} + \frac{n}{\sigma^2}\right)^{-1}$ |
-| **Multinomial**<br>
-
-<br>$\mathcal{M}(n, \mathbf{p})$ | $\mathbf{p}$ (Probability Vector) | **Dirichlet**<br>
-
-<br>$\text{Dirichlet}(\boldsymbol{\alpha})$ | $\boldsymbol{\alpha}_{\text{post}} = \boldsymbol{\alpha} + \mathbf{x}$ |
+Observational Likelihood Model P(D∣θ),Target Latent Parameter (θ),Assigned Conjugate Prior P(θ),Functional Hyperparameter Update Rule (P(θ∣D))
+"BinomialB(n,p)",p (Success Probability),"BetaBeta(α,β)",αpost​=α+∑i=1n​xi​βpost​=β+n−∑i=1n​xi​
+PoissonPoi(λ),λ (Rate Parameter),"GammaGamma(α,β)",αpost​=α+∑i=1n​xi​βpost​=β+n
+"Normal (Known Variance σ2)N(μ,σ2)",μ (Population Mean),"NormalN(μ0​,σ02​)",μpost​=(σ02​μ0​​+σ2∑xi​​)⋅σpost2​σpost2​=(σ02​1​+σ2n​)−1
+"MultinomialM(n,p)",p (Probability Vector),DirichletDirichlet(α),αpost​=α+x
 
 ---
 
