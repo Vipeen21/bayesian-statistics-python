@@ -10,6 +10,7 @@ Bayesian point estimation treats parameter selection as an optimization problem 
 
 ### Mathematical Foundations of Classical Point Summaries
 
+
 | Estimator Class | Mathematical Formulation | Optimization Characterization |
 | --- | --- | --- |
 | **Posterior Mean** | $\hat{\theta}_{\text{Mean}} = \mathbb{E}[\theta \mid D] = \int_{\Theta} \theta \, P(\theta \mid D) \, d\theta$ | Minimizes expected quadratic loss: $L(\theta, \hat{\theta}) = (\theta - \hat{\theta})^2$. Extremely sensitive to heavy tails. |
