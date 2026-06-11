@@ -17,7 +17,7 @@ Let $\theta^{(t)}$ denote the current state of the parameter vector in a continu
 
 
 ```math
-\alpha(\theta^{(t)}, \theta^*) = \min\left(1, \frac{P(D \mid \theta^*) P(\theta^*) q(\theta^{(t)} \mid \theta^*)}{P(D \mid \theta^{(t)}) P(\theta^{(t)}) q(\theta^* \mid \theta^{(t)})}\right)
+$$\alpha(\theta^{(t)}, \theta^*) = \min\left(1, \frac{P(D \mid \theta^*) P(\theta^*) q(\theta^{(t)} \mid \theta^*)}{P(D \mid \theta^{(t)}) P(\theta^{(t)}) q(\theta^* \mid \theta^{(t)})}\right)$$
 ```
 
 
