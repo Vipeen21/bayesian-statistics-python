@@ -15,7 +15,8 @@ Let $\theta^{(t)}$ denote the current state of the parameter vector in a continu
 1. **Proposal Phase:** A candidate state $\theta^{ * }$ is drawn from a user-defined proposal distribution (or transition kernel) $q(\theta^* \mid \theta^{(t)})$.
 2. **Acceptance-Rejection Phase:** The candidate state is evaluated against the localized density volume of the current state. The probability of transition acceptance, $\alpha(\theta^{(t)}, \theta^*)$, is computed precisely as:
 
-$$\alpha(\theta^{(t)}, \theta^*) = \min\left(1, \frac{P(D \mid \theta^*) P(\theta^*) q(\theta^{(t)} \mid \theta^*)}{P(D \mid \theta^{(t)}) P(\theta^{(t)}) q(\theta^* \mid \theta^{(t)})}\right)$$
+```math\alpha(\theta^{(t)}, \theta^*) = \min\left(1, \frac{P(D \mid \theta^*) P(\theta^*) q(\theta^{(t)} \mid \theta^*)}{P(D \mid \theta^{(t)}) P(\theta^{(t)}) q(\theta^* \mid \theta^{(t)})}\right)
+```
 
 If the proposal distribution is symmetric, such that $q(\theta^* \mid \theta^{(t)}) = q(\theta^{(t)} \mid \theta^*)$ (e.g., a Gaussian random walk), the expression reduces to the standard Metropolis-Hastings ratio:
 
